@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent">
+  
+  <RelativeLayout
+  	android:layout_width="fill_parent"
+  	android:layout_height="wrap_content"
+  	android:orientation="horizontal"
+  	android:padding="6dip">
+  	
+  	<RelativeLayout
+  		android:id="@+id/about_header"
+  		android:orientation="vertical"
+  		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content">
+  		<ImageView
+  			android:id="@+id/application_icon"
+  			android:src="@drawable/icono"
+  			android:layout_width="wrap_content"
+  			android:layout_height="wrap_content"
+  			android:adjustViewBounds="true"
+  			android:layout_marginLeft="6dip"
+  			android:layout_marginTop="6dip" />
+  		<TextView
+  			android:id="@+id/application_title"
+  			android:text="@string/app_name"
+  			android:layout_width="wrap_content"
+  			android:layout_height="wrap_content"
+	  		android:layout_toRightOf="@id/application_icon"
+	  		android:layout_alignBottom="@id/application_icon"
+	  		android:layout_marginLeft="6dip"
+	  		android:layout_centerHorizontal="true"
+	  		android:layout_centerVertical="true"
+	  		android:gravity="left"
+	  		android:textSize="20sp"
+	  		android:textColor="@android:color/white"
+	  		android:singleLine="true"
+	  		android:ellipsize="none" />
+  	</RelativeLayout>
+  	
+  	<TextView
+  		android:id="@+id/application_version"
+  		android:text="@string/version"
+  		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:layout_below="@id/about_header"
+  		android:layout_marginTop="10dip"
+  		android:textSize="15sp"/>
+  	<TextView
+  		android:id="@+id/application_developers"
+  		android:text="@string/developers"
+  		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:layout_below="@id/application_version"
+  		android:layout_marginTop="6dip"
+  		android:textSize="15sp"/>
+  	<TextView
+  		android:id="@+id/application_more_info"
+  		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:layout_below="@id/application_developers"
+  		android:layout_marginTop="6dip"
+  		android:textSize="15sp"/>
+  	
+  </RelativeLayout>
+  
+</LinearLayout>

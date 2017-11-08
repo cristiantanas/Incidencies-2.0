@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android">
+  <Preference
+	android:title="@string/register_preference"
+	android:key="emailAddress" />
+  <PreferenceScreen
+  	android:title="@string/list_view_visualization_pref"
+  	android:summary="@string/list_view_visualization_summary"
+  	android:key="listPreference">
+  	<org.uab.android.eventreporter.lists.ListPreferenceMultiSelect
+  		android:title="@string/renfe_label"
+  		android:key="renfeMultiLines"
+  		android:entries="@array/renfe_lines"
+  		android:entryValues="@array/renfe_lines_id"/>
+  	<org.uab.android.eventreporter.lists.ListPreferenceMultiSelect
+  		android:title="@string/fgc_label"
+  		android:key="fgcMultiLines"
+  		android:entries="@array/fgc_lines"
+  		android:entryValues="@array/fgc_lines_id"/>
+  	<org.uab.android.eventreporter.lists.ListPreferenceMultiSelect
+  		android:title="@string/metro_label"
+  		android:key="metroMultiLines"
+  		android:entries="@array/metro_lines"
+  		android:entryValues="@array/metro_lines_id"/>
+  </PreferenceScreen>
+</PreferenceScreen>

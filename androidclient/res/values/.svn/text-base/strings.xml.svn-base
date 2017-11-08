@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, MainActivity!</string>
+    <string name="app_name">Incidencies 2.0</string>
+    <string name="version">Versió: 1.0</string>
+    <string name="developers">Aplicació desenvolupada dintre del grup de recerca SeNDA del 
+    	Departament d\'Enginyeria de la Informació i de les Comunicacions, Universitat Autònoma 
+    	de Barcelona.</string>
+    <string name="more_info">Visita http://www.incidencies.org per més informació</string>
+    <string name="preferences_name">Preferències</string>
+    <string name="incidents_name">Incidències</string>
+    <string name="comments_name">Commentaris d\'usuaris</string>
+    <string name="favorite_name">Línies preferides</string>
+    <string name="new_incident_name">Nova incidència</string>
+    <string name="view_incident_name">Visualitzar incidències</string>
+    <string name="main_menu_options">Menu principal</string>
+    <string name="report_button_label">Reportar nova incidència</string>
+    <string name="view_events_button_label">Visualitzar incidències</string>
+    <string name="menu_preferences_label">Preferències</string>
+    <string name="exit_button_label">Sortir</string>
+    <string name="renfe_name">Rodalies de Catalunya</string>
+    <string name="fgc_name">Ferrocarils de la Generalitat</string>
+    <string name="metro_name">Metro Barcelona</string>
+    <string name="route_selection_name">Seleccionar una línia</string>
+    
+    <string name="my_location_label">Posició actual</string>
+    <string name="layers_label">Canviar vista</string>
+    <string name="view_events_label">Seleccionar</string>
+    <string name="report_label">Reportar incidència</string>
+    <string name="back_label">Menu principal</string>
+    <string name="menu_more_comments_label">Veure tots els comentaris</string>
+    <string name="menu_more_lines_label">Veure més línies</string>
+    <string name="menu_view_map_label">Veure mapa</string>
+    
+    <string name="report_type_label">Tipus de transport públic?</string>
+    <string name="direction_label">En quina direcció?</string>
+    <string name="report_class_label">Quina és la causa de la incidència?</string>
+    <string name="report_severity_label">Valori la gravetat de la incidència:</string>
+    <string name="description_label">Escriu una descripció opcional</string>
+    <string name="submit_label">Enviar</string>
+    <string name="modify_label">Modificar</string>
+    <string name="cancel_label">Cancel·lar</string>
+    <string name="rss_confirm_station_label">Seleccioni una estació</string>
+    
+    <string name="choose_location_label">Tria l\'opció que correspongui:</string>
+    <string name="renfe_label">Rodalies de Catalunya</string>
+    <string name="fgc_label">Ferrocarils de la Generalitat</string>
+    <string name="metro_label">Metro</string>
+    <string name="map_label">GOOGLE MAPS</string>
+    
+    <string name="ui_activity_title">Login</string>
+    <string name="ui_login_authenticating">Comprovant informació...</string>
+    <string name="login_username_failed">Per favor introdueix un nom d\'usuari vàlid!</string>
+    <string name="login_password_failed">La contrasenya no es vàlida!</string>
+    <string name="login_server_failed">Sembla que hi ha un problema amb el servidor. 
+    	Torni a intentar-ho més tard.</string>
+    
+    <string name="login_title_label">Login</string>
+    <string name="login_newaccount_text">Introdueix el teu nom d\'usuari y contrasenya</string>
+    <string name="login_username_label">Usuari</string>
+    <string name="login_password_label">Contrasenya</string>
+    <string name="login_ok_button">Entrar</string>
+    <string name="anonimous_user_label">Usuari sense registrar?</string>
+    
+    <string name="change_user_preference">Canviar usuari</string>
+    <string name="change_user_summary">Accedir a l\'aplicació amb un altre nom d\'usuari</string>
+    <string name="map_view_visualization_pref">Mapa</string>
+    <string name="map_view_visualization_summary">Veure les incidències en un mapa</string>
+    <string name="list_view_visualization_pref">Línies preferides</string>
+    <string name="list_view_visualization_summary">Seleccionar les línies que vol seguir</string>
+    <string name="register_preference">Registrar-se</string>
+    <string name="new_email_label">Introdueix una adreça de correu electrònic</string>
+    <string name="register_button_label">Registar-se</string>
+    <string name="renfe_line_select">Selecciona una línia de Rodalies</string>
+    <string name="fgc_line_select">Selecciona una línia de FGC</string>
+    <string name="metro_line_select">Selecciona una línia de Metro</string>
+    <string name="new_user_label">Introdueix el nou usuari</string>
+    <string name="change_passwd_preference">Canviar contrasenya</string>
+    <string name="change_passwd_summary">Canviar la teva contrasenya</string>
+    <string name="new_passwd_label">Introdueix la nova contrasenya</string>
+    <string name="passwd_dialog_label">Introdueix la contrasenya</string>
+    
+    <string name="no_incidents">Actualment no hi ha cap incidència</string>
+    <string name="detail_comments_label">Veure més comentaris</string>
+    <string name="detail_confirmation_label">Confirmar</string>
+    <string name="detail_map_label">Veure en el mapa</string>
+    <string name="detail_cancel_label">Tornar</string>
+    
+    <string name="confirmation_dialog_label">Introdueix un comentari:</string>
+    <string name="register_email_label">Correu electrònic</string>
+    <string name="register_passwd_label">Contrasenya</string>
+    <string name="confirm_passwd_label">Confirmar contrasenya</string>
+    
+    <string name="new_incident_options">Quin tipus d\'incidència vol reportar?</string>
+    <string name="new_visualization_options">Quin tipus d\'incidència vol visualitzar?</string>
+    <string name="public_transport_button_label">Transport públic</string>
+    <string name="others_button_label">Incidència general</string>
+    <string name="general_incident_label">Incidència general</string>
+    <string name="note_label">Nota!</string>
+    <string name="location_info_label">La informació de posicionament s\'enviarà juntament amb la descripció de la incidència.</string>
+    <string name="incident_description_label">Introdueix la descripció de la incidència</string>
+    <string name="last_incidents_label">Últimes incidències</string>
+    <string name="menu_about_label">Més informació</string>
+    
+    <string name="eula_title">Llicència</string>
+    <string name="eula_accept">Acceptar</string>
+    <string name="eula_refuse">Refusar</string>
+    
+    <string name="t11_button_label">T11</string>
+    <string name="T11_menu">Benvingut a la T11</string>
+    <string name="T11_menu_title">T11</string>
+    <string name="T11_menu_drop_label">Deixar una T11</string>
+    <string name="T11_menu_search_label">Buscar una T11</string>
+    <string name="T11_location_info">La informació de posicionament s\'enviarà juntament amb la informació introduïda</string>
+    <string name="T11_drop_line_desc_hint">(línia que has agafat)</string>
+    <string name="T11_drop_description_hint">(descripció del lloc on es deixa)</string>
+    <string name="T11_validation_time">Indica\'ns quan has picat la T11:</string>
+    <string name="T11_time_undefined">-Hora sense determinar-</string>
+    <string name="T11_submit_label">Deixar</string>
+    <string name="no_T11_available">Actualment no hi ha cap T11 disponible.</string>
+</resources>

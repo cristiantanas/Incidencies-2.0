@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:padding="30dip"
+  android:orientation="horizontal">
+  
+  <LinearLayout
+  	android:orientation="vertical"
+  	android:layout_width="fill_parent"
+  	android:layout_height="wrap_content"
+  	android:layout_gravity="center">
+  	
+  	<TextView
+  		android:layout_width="wrap_content"
+  		android:layout_height="wrap_content"
+  		android:layout_gravity="center"
+  		android:layout_marginBottom="25dip"
+  		android:textSize="22sp"
+  		android:text="@string/T11_menu"/>
+  	
+  	<RelativeLayout
+  		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content">	
+  	<ImageView
+  		android:id="@+id/T11_menu_drop"
+  		android:layout_width="wrap_content"
+  		android:layout_height="wrap_content"
+  		android:adjustViewBounds="true"
+  		android:src="@drawable/hand_over_card"/>
+  	<TextView
+  		android:id="@+id/T11_drop_label_id"
+  		android:layout_width="wrap_content"
+  		android:layout_height="wrap_content"
+  		android:layout_toRightOf="@id/T11_menu_drop"
+  		android:layout_marginTop="27dip"
+  		android:textSize="16sp"
+  		android:text="@string/T11_menu_drop_label"/>
+  		
+  	<ImageView
+  		android:id="@+id/T11_menu_search"
+  		android:layout_width="wrap_content"
+  		android:layout_height="wrap_content"
+  		android:layout_below="@id/T11_menu_drop"
+  		android:layout_alignLeft="@id/T11_menu_drop"
+  		android:layout_marginLeft="20dip"
+  		android:layout_marginTop="10dip"
+  		android:adjustViewBounds="true"
+  		android:src="@drawable/search"/>
+  	<TextView
+  		android:id="@+id/T11_search_label_id"
+  		android:layout_width="wrap_content"
+  		android:layout_height="wrap_content"
+  		android:layout_toRightOf="@id/T11_menu_search"
+  		android:layout_alignLeft="@id/T11_drop_label_id"
+  		android:layout_marginTop="118dip"
+  		android:textSize="16sp"
+  		android:text="@string/T11_menu_search_label"/>
+  	</RelativeLayout>
+  	
+  </LinearLayout>
+  
+</LinearLayout>

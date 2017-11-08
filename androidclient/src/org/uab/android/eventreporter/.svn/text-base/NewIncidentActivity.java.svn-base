@@ -1,0 +1,62 @@
+package org.uab.android.eventreporter;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.TextView;
+
+public class NewIncidentActivity extends Activity {
+
+	private TextView title;
+	private Button publicTransportInc;
+	private Button generalInc;
+	
+	private String username;
+	
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.new_incident_layout);
+		
+		title = (TextView) findViewById(R.id.activity_title_label);
+		publicTransportInc = (Button) findViewById(R.id.public_transport_button);
+		generalInc = (Button) findViewById(R.id.others_button);
+		
+		title.setText(getResources().getString(R.string.new_incident_options));
+	}
+	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		
+		username = getIntent().getStringExtra("username");
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		publicTransportInc.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(getApplicationContext(), ChooseLocationActivity.class)
+						.putExtra("username", username));
+			}
+		});
+		
+		generalInc.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(getApplicationContext(), GeneralReportActivity.class)
+						.putExtra("username", username));
+			}
+		});
+	}
+}

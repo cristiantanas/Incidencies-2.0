@@ -1,0 +1,67 @@
+package org.uab.android.eventreporter.lists;
+
+import java.util.ArrayList;
+
+import org.uab.android.eventreporter.admin.R;
+import org.uab.android.eventreporter.utils.GeneralNotification;
+import org.uab.android.eventreporter.utils.Utils;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+public class GeneralListAdapter extends BaseAdapter {
+
+	private ArrayList<GeneralNotification> incidentList;
+	private Context context;
+	
+	public GeneralListAdapter(ArrayList<GeneralNotification> incidentList, Context context) {
+		this.incidentList = incidentList;
+		this.context = context;
+	}
+	
+	@Override
+	public int getCount() {
+		return incidentList.size();
+	}
+
+	@Override
+	public Object getItem(int position) {
+		return incidentList.get(position);
+	}
+
+	@Override
+	public long getItemId(int position) {
+		return incidentList.get(position).getId();
+	}
+
+	@Override
+	public View getView(int position, View convertView, ViewGroup parent) {
+		RelativeLayout itemLayout = (RelativeLayout) LayoutInflater.from(context)
+						.inflate(R.layout.general_incident_row_layout, parent, false);
+		GeneralNotification incident = incidentList.get(position);
+		
+		TextView description = (TextView) itemLayout.findViewById(R.id.incident_description_label);
+		description.setText(incident.getDescription());
+		
+		TextView time = (TextView) itemLayout.findViewById(R.id.incident_reporting_time);
+		long lastReported = (System.currentTimeMillis() - 
+				incident.getLastUpdateTime()) / Utils.MIN_TO_MILIS;
+		time.setText("Fa " + (int) lastReported + " minuts");
+		
+		ImageView confirmed = (ImageView) itemLayout.findViewById(R.id.confirmed_incident_icon);
+		if ( incident.getStatus() == 0 ) {
+			confirmed.setImageResource(R.drawable.i_unconfirmed);		}
+		
+		else if ( incident.getStatus() == 1 ) {
+			confirmed.setImageResource(R.drawable.i_confirmed);		}
+		
+		return itemLayout;
+	}
+
+}

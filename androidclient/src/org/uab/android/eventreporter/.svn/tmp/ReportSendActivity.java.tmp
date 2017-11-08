@@ -1,0 +1,139 @@
+package org.uab.android.eventreporter;
+
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+import org.uab.android.eventreporter.admin.R;
+import org.uab.android.eventreporter.net.NetworkUtils;
+import org.uab.android.eventreporter.net.SendDataToServer;
+import org.uab.android.eventreporter.utils.RouteContentManager;
+import org.uab.android.eventreporter.utils.Utils;
+import org.uab.android.eventreporter.utils.XMLIncidentNotificationParser;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.TextView;
+
+public class ReportSendActivity extends Activity {
+	public static final String CLASSTAG = ReportSendActivity.class.getSimpleName().toUpperCase();
+	
+	private RouteContentManager routeManager = new RouteContentManager();
+	private Spinner directionSpinner = null;
+	private static final String DEFAULT_DIRECTION = "Sense determinar";
+	private Spinner classSpinner = null;
+	private Spinner severitySpinner = null;
+	private EditText descriptionInfo = null;
+	private TextView stationInfo = null;
+	private TextView timeInformation = null;
+	private Button submitButton = null;
+	private Button cancelButton = null;
+	private long time = 0;
+	private String username = "";
+	private int serviceType = Utils.UNKNOWN;
+	private int uniqueLineId = 0;
+	private String stationName = "";
+	private String stationNameHash = "";
+	
+	public Spinner getClassSpinner() {
+		return classSpinner;
+	}
+	
+	public Spinner getSeveritySpinner() {
+		return severitySpinner;
+	}
+	
+	public EditText getDescriptionInfo() {
+		return descriptionInfo;
+	}
+	
+	public String getUsername() {
+		return username;
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.report_send_layout);
+		
+		directionSpinner = (Spinner) findViewById(R.id.direction_spinner);
+		classSpinner = (Spinner) findViewById(R.id.class_spinner);
+		severitySpinner = (Spinner) findViewById(R.id.severity_spinner);
+		descriptionInfo = (EditText) findViewById(R.id.optional_description);
+		stationInfo = (TextView) findViewById(R.id.station_info);
+		timeInformation = (TextView) findViewById(R.id.date_time_information);
+		submitButton = (Button) findViewById(R.id.submit_button);
+		cancelButton = (Button) findViewById(R.id.cancel_button);
+	}
+	
+	@Override
+	protected void onStart() {
+		super.onStart();		
+		username = getIntent().getStringExtra("username");
+		serviceType = getIntent().getExtras().getInt("service");
+		uniqueLineId = getIntent().getExtras().getInt("line");
+		stationName = getIntent().getExtras().getString("station");
+		stationNameHash = getIntent().getExtras().getString("stationHash");
+		time = System.currentTimeMillis();
+		
+		stationInfo.setText(stationName);
+		
+		ArrayAdapter<CharSequence> directionAdapter = new ArrayAdapter<CharSequence>(this, 
+				android.R.layout.simple_spinner_item, new String[] 
+				{DEFAULT_DIRECTION, routeManager.getLineBegining(uniqueLineId), routeManager.getLineEnding(uniqueLineId)});
+		directionAdapter.setDropDownViewResource(R.layout.spinner_dropdown_layout);
+		directionSpinner.setAdapter(directionAdapter);
+		
+		ArrayAdapter<CharSequence> classAdapter = ArrayAdapter.createFromResource(this, 
+				R.array.report_class, android.R.layout.simple_spinner_item);
+		classAdapter.setDropDownViewResource(R.layout.spinner_dropdown_layout);
+		classSpinner.setAdapter(classAdapter);
+		
+		ArrayAdapter<CharSequence> sevAdapter = ArrayAdapter.createFromResource(this, 
+				R.array.severity_type, android.R.layout.simple_spinner_item);
+		sevAdapter.setDropDownViewResource(R.layout.spinner_dropdown_layout);
+		severitySpinner.setAdapter(sevAdapter);
+		
+		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT,
+				DateFormat.SHORT, Locale.FRANCE);
+		timeInformation.setText("Data i hora: " + df.format(new Date(time)));
+		
+		submitButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				String data = XMLIncidentNotificationParser.encode(
+						serviceType,
+						uniqueLineId,
+						stationNameHash,
+						directionSpinner.getSelectedItemPosition(),
+						classSpinner.getSelectedItemPosition(), 
+						severitySpinner.getSelectedItemPosition(), 
+						descriptionInfo.getText().toString(), 
+						time, 
+						username);
+				
+				String message = NetworkUtils.createMessage(Utils.INCIDENT_NOTIFICATION, 
+						new String[] {data});
+				new SendDataToServer(ReportSendActivity.this).execute(message);
+			}
+		});
+		
+		cancelButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(getApplicationContext(),MainMenuActivity.class)
+						.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+						.putExtra("username", username));
+			}
+		});
+	}
+}

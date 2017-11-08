@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:paddingLeft="30dip"
+  android:paddingRight="30dip">
+  
+  <LinearLayout
+  	android:id="@+id/menu_opts"
+  	android:orientation="vertical"
+  	android:layout_width="fill_parent"
+  	android:layout_height="wrap_content"
+  	android:layout_centerInParent="true"
+  	android:layout_gravity="center">
+  	<TextView
+  		android:text="@string/main_menu_options"
+  		android:layout_width="wrap_content"
+  		android:layout_height="wrap_content"
+  		android:layout_gravity="center"
+  		android:layout_marginBottom="25dip"
+  		android:textSize="22sp"/>
+  	<Button
+  		android:id="@+id/view_events_button"
+  		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:text="@string/view_events_button_label"/>
+  	<Button
+  		android:id="@+id/report_button"
+  		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:text="@string/report_button_label"/>
+  	<Button
+  		android:id="@+id/t11_button"
+  		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:text="@string/t11_button_label"/>
+  </LinearLayout>
+  
+  <ImageView
+  	android:id="@+id/twitter_image"
+  	android:layout_width="wrap_content"
+  	android:layout_height="wrap_content"
+  	android:layout_below="@id/menu_opts"
+  	android:layout_alignParentBottom="true"
+  	android:src="@drawable/twitter"/>
+  
+</RelativeLayout>

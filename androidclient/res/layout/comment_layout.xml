@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+  	android:layout_height="wrap_content"
+  	android:padding="6dip">
+  	<TextView
+  		android:id="@+id/date_time_info"
+  		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:textStyle="italic"
+  		android:gravity="left"
+  		android:layout_marginTop="6dip"
+  		android:layout_marginLeft="6dip" />
+  	<TextView
+  		android:id="@+id/comment_desc"
+  		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:layout_below="@id/date_time_info"
+  		android:textStyle="italic"
+  		android:gravity="left"
+  		android:layout_marginLeft="6dip" />
+</RelativeLayout>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+	
+<RelativeLayout
+  android:layout_width="fill_parent"
+  android:layout_height="wrap_content" 
+  android:baselineAligned="true">
+  
+    <TextView 
+    	android:layout_width="fill_parent" 
+    	android:layout_height="wrap_content"
+    	android:text="@string/new_route_label" 
+    	android:textSize="16sp" 
+    	android:textStyle="normal" 
+    	android:layout_marginLeft="10dip" 
+    	android:layout_marginTop="25dip" android:id="@+id/new_traj_info">
+    </TextView>
+    <Spinner 
+        android:layout_alignParentLeft="true" 
+        android:layout_height="wrap_content" 
+        android:layout_below="@+id/new_traj_info" 
+        android:layout_width="fill_parent" 
+        android:layout_marginLeft="25dip" 
+        android:layout_marginRight="25dip" 
+        android:layout_marginTop="10dip" 
+        android:id="@+id/tipusTranspPub">
+    </Spinner>
+    <Spinner 
+        android:layout_height="wrap_content" 
+        android:id="@+id/estacioDesti" 
+        android:layout_below="@+id/estacioOrigen" 
+        android:layout_width="fill_parent" 
+        android:layout_centerHorizontal="false" 
+        android:layout_toRightOf="@+id/destiLabel" 
+        android:layout_marginLeft="20dip" 
+        android:layout_marginRight="25dip" 
+        android:layout_marginTop="10dip">
+    </Spinner>
+    <Spinner 
+        android:layout_height="wrap_content" 
+        android:layout_below="@+id/tipusTranspPub" 
+        android:layout_width="fill_parent" 
+        android:id="@+id/estacioOrigen" 
+        android:layout_toRightOf="@+id/origenLabel" 
+        android:layout_marginLeft="10dip" 
+        android:layout_marginRight="25dip" 
+        android:layout_marginTop="10dip">
+    </Spinner>
+    <Chronometer android:text="Chronometer" android:layout_below="@+id/estacioDesti" android:layout_height="wrap_content" android:layout_centerHorizontal="true" android:gravity="center" android:layout_alignParentLeft="false" android:layout_width="fill_parent" android:id="@+id/chronometer" android:layout_marginTop="30dip"></Chronometer>
+    <Button android:layout_height="wrap_content" android:layout_width="wrap_content" android:layout_below="@+id/chronometer" android:layout_centerHorizontal="true" android:layout_alignParentLeft="false" android:text="@string/start_chronometer" android:id="@+id/start_stop_button" android:layout_marginTop="30dip"></Button>
+    <TextView android:text="Origen:" android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/origenLabel" android:layout_below="@+id/tipusTranspPub" android:layout_marginLeft="10dip" android:layout_marginTop="25dip"></TextView>
+    <TextView android:text="Destí:" android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/destiLabel" android:layout_below="@+id/estacioOrigen" android:layout_marginLeft="10dip" android:layout_marginTop="25dip"></TextView>
+    
+</RelativeLayout>
+
+</ScrollView>

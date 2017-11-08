@@ -1,0 +1,87 @@
+package org.uab.android.eventreporter.utils;
+
+import java.util.HashMap;
+
+import org.uab.android.eventreporter.admin.R;
+
+public class RouteContentManager {
+	private HashMap<Integer, RouteHeader> contents = new HashMap<Integer, RouteHeader>();
+	
+	public RouteContentManager() {
+		contents.put(0, new RouteHeader(R.drawable.renfe00,
+				"Molins de Rei", "Maçanet-Massanes", "R1", R.array.renfe_c1_line));
+		contents.put(1, new RouteHeader(R.drawable.renfe01,
+				"Aeroport", "Maçanet-Massanes", "R2 Nord", R.array.renfe_c2_nord_line));
+		contents.put(2, new RouteHeader(R.drawable.renfe02,
+				"St. Vicenç de Calders", "Barcelona Estació de França", "R2 Sud", R.array.renfe_c2_sud_line));
+		contents.put(3, new RouteHeader(R.drawable.renfe03,
+				"L\'Hospitalet de Llobregat", "La Tor de Querol", "R3", R.array.renfe_c3_line));
+		contents.put(4, new RouteHeader(R.drawable.renfe04,
+				"St. Vicenç de Calders", "Manresa", "R4", R.array.renfe_c4_line));
+		contents.put(5, new RouteHeader(R.drawable.renfe05,
+				"Barcelona St. Andreu Arenal", "Cerdanyola Universitat", "R7", R.array.renfe_c7_line));
+		contents.put(6, new RouteHeader(R.drawable.renfe06, 
+				"Martorell", "Granollers Centre", "R8", R.array.renfe_c8_line));
+		
+		contents.put(10, new RouteHeader(R.drawable.fgc10,
+				"Barcelona Pl. Catalunya", "Reina Elisenda", "L6", R.array.fgc_l6_line));
+		contents.put(11, new RouteHeader(R.drawable.fgc11,
+				"Barcelona Pl. Catalunya", "Terrassa Rambla", "S1", R.array.fgc_s1_line));
+		contents.put(12, new RouteHeader(R.drawable.fgc12,
+				"Barcelona Pl. Catalunya", "Universitat Autònoma", "S55", R.array.fgc_s55_line));
+		contents.put(13, new RouteHeader(R.drawable.fgc13,
+				"Barcelona Pl. Catalunya", "Rubí Estació", "S5", R.array.fgc_s5_line));
+		contents.put(14, new RouteHeader(R.drawable.fgc14,
+				"Barcelona Pl. Catalunya", "Sabadell Rambla", "S2", R.array.fgc_s2_line));
+		contents.put(15, new RouteHeader(R.drawable.fgc15,
+				"Barcelona Pl. Catalunya", "Avinguda Tibidabo", "L7", R.array.fgc_l7_line));
+		
+		contents.put(20, new RouteHeader(R.drawable.metro20,
+				"Hospital de Bellvitge", "Fondo", "L1", R.array.metro_l1_line));
+		contents.put(21, new RouteHeader(R.drawable.metro21,
+				"Paral·lel", "Badalona Pompeu Fabra", "L2", R.array.metro_l2_line));
+		contents.put(22, new RouteHeader(R.drawable.metro22,
+				"Zona Universitària", "Trinitat Nova", "L3", R.array.metro_l3_line));
+		contents.put(23, new RouteHeader(R.drawable.metro23,
+				"Trinitat Nova", "La Pau", "L4", R.array.metro_l4_line));
+		contents.put(24, new RouteHeader(R.drawable.metro24,
+				"Cornellà Centre", "Vall d\'Hebron", "L5", R.array.metro_l5_line));
+		contents.put(25, new RouteHeader(R.drawable.metro25,
+				"La Sagrera", "Can Zam", "L9", R.array.metro_l9_line));
+		contents.put(26, new RouteHeader(R.drawable.metro26,
+				"La Sagrera", "Gorg", "L10", R.array.metro_l10_line));
+		contents.put(27, new RouteHeader(R.drawable.metro27,
+				"Trinitat Nova", "Can Cuiàs", "L11", R.array.metro_l11_line));
+	}
+	
+	public int getLineIcon(int key) {
+		return contents.get(key).getResourceId();
+	}
+	
+	public String getLineBegining(int key) {
+		return contents.get(key).getBeginStation();
+	}
+	
+	public String getLineEnding(int key) {
+		return contents.get(key).getEndStation();
+	}
+	
+	public String getSimpleName(int key) {
+		return contents.get(key).getSimpleName();
+	}
+	
+	public int getStationsIdentifier(int key) {
+		return contents.get(key).getStationsIdentifier();
+	}
+	
+	public String getLineDirection(int key, int direction) {
+		if (direction == 1) {
+			return contents.get(key).getBeginStation();		}
+		
+		else if (direction == 2) {
+			return contents.get(key).getEndStation();		}
+		
+		else {
+			return "Sense determinar";		}
+	}
+}

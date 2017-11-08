@@ -1,0 +1,156 @@
+package org.uab.android.eventreporter;
+
+import org.apache.commons.codec.binary.Base64;
+import org.uab.android.eventreporter.lists.GeneralIncCommentsActivity;
+import org.uab.android.eventreporter.net.NetworkUtils;
+import org.uab.android.eventreporter.utils.GeneralNotification;
+import org.uab.android.eventreporter.utils.IncidentContentManager;
+import org.uab.android.eventreporter.utils.Utils;
+
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+
+public class GeneralIncDetailActivity extends Activity {
+
+	public static final int DIALOG_CONFIRMATION = 0;
+	public static final String DIALOG_CONFIRMATION_TITLE = "Confirmar incidència";
+	private TextView description;
+	private TextView timeInfo;
+	private Button confirmButton;
+	private Button mapButton;
+	private Button commentsButton;
+	
+	private String username;
+	private int incidentId;
+	private boolean requestUpdate;
+	private int action;
+	private double latitude;
+	private double longitude;
+	
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.general_inc_detail_layout);
+		
+		description = (TextView) findViewById(R.id.general_inc_description);
+		timeInfo = (TextView) findViewById(R.id.general_inc_time_detail);
+		confirmButton = (Button) findViewById(R.id.general_inc_confirm_button);
+		mapButton = (Button) findViewById(R.id.general_inc_map_button);
+		commentsButton = (Button) findViewById(R.id.general_inc_comments_button);
+	}
+	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		
+		username = getIntent().getStringExtra("username");
+		incidentId = getIntent().getIntExtra("incidentId", -1);
+		requestUpdate = getIntent().getBooleanExtra("requestUpdate", false);
+		action = getIntent().getIntExtra("action", -1);
+		IncidentContentManager contentMng = IncidentContentManager.getInstance();
+		GeneralNotification incident = contentMng.getGeneralIncident(incidentId, requestUpdate);
+		latitude = incident.getLatitude();
+		longitude = incident.getLongitude();
+		
+//		String d = new String(Base64.decodeBase64(incident.getDescription().getBytes()));
+		description.setText(incident.getDescription());
+		long lastReported = (System.currentTimeMillis() - 
+				incident.getLastUpdateTime()) / Utils.MIN_TO_MILIS;
+		timeInfo.setText("Incidència reportada fa " + (int) lastReported + " minuts");
+		
+		confirmButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				showDialog(DIALOG_CONFIRMATION);
+			}
+		});
+		
+		mapButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(getApplicationContext(), MainActivity.class)
+						.putExtra("username", username)
+						.putExtra("latitude", latitude)
+						.putExtra("longitude", longitude)
+						.putExtra("incidentType", Utils.GENERAL_INCIDENTS)
+						.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+			}
+		});
+		
+		commentsButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(getApplicationContext(), GeneralIncCommentsActivity.class)
+						.putExtra("incidentId", incidentId));
+			}
+		});
+	}
+	
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		Dialog dialog;
+		switch (id) {
+		case DIALOG_CONFIRMATION:
+			dialog = new Dialog(this);
+			dialog.setContentView(R.layout.confirmation_dialog_layout);
+			dialog.setTitle(DIALOG_CONFIRMATION_TITLE);
+			
+			final EditText comment = (EditText) dialog.findViewById(R.id.confirmation_description);
+			Button submitButton = (Button) dialog.findViewById(R.id.confirmation_submit_button);
+			submitButton.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					String desc = Utils.escape(comment.getText().toString());
+					String d = new String(Base64.encodeBase64(desc.getBytes()));
+					NetworkUtils.sendGeneralConfToServer(incidentId, d, username, GeneralIncDetailActivity.this);
+				}
+			});
+			
+			Button cancelButton = (Button) dialog.findViewById(R.id.confirmation_cancel_button);
+			cancelButton.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					dismissDialog(DIALOG_CONFIRMATION);
+				}
+			});
+			
+			break;
+			
+		default:
+			dialog = null;
+		}
+		
+		return dialog;
+	}
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if (action == Utils.CLEAR_STACK) {
+				startActivity(new Intent(this, MainMenuActivity.class)
+						.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));			}
+			
+			else {
+				finish();			}
+			
+			return true;
+		}
+		
+		return super.onKeyDown(keyCode, event);
+	}
+}

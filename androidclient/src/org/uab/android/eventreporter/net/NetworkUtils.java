@@ -1,0 +1,608 @@
+package org.uab.android.eventreporter.net;
+
+import java.io.IOException;
+
+import org.uab.android.eventreporter.LoginActivity;
+import org.uab.android.eventreporter.MainActivity;
+import org.uab.android.eventreporter.utils.Utils;
+
+import android.content.Context;
+import android.os.Handler;
+import android.util.Log;
+
+public class NetworkUtils {
+	public static final String CLASSTAG = NetworkUtils.class.getSimpleName().toUpperCase();
+	
+	private static ServerConnection server = new ServerConnection();
+	public static final int CONNECTION_TIMEOUT = 30 * 1000;
+
+	public static Thread attemptAuth(final String username, final String password,
+			final Handler handler, final Context context) {
+		Runnable runnable = new Runnable() {
+			
+			@Override
+			public void run() {
+				authenticate(username, password, handler, context);
+			}
+		};
+		
+		return NetworkUtils.performOnBackgroundThread(runnable);
+	}
+	
+	public static Thread attemptEventSearch(final int eventType, final Handler handler, 
+			final Context context) {
+		Runnable runnable = new Runnable() {
+			
+			@Override
+			public void run() {
+				getEventsFromServer(eventType, handler, context);
+			}
+		};
+		
+		return NetworkUtils.performOnBackgroundThread(runnable);
+	}
+	
+	public static Thread attemptIncidentsRequest(final int lineId, final String username, 
+			final Handler handler, final Context context) {
+		Runnable runnable = new Runnable() {
+			
+			@Override
+			public void run() {
+				getIncidentsForLine(lineId, username, .0, .0, handler, context);
+			}
+		};
+		
+		return performOnBackgroundThread(runnable);
+	}
+
+	public static boolean authenticate(String username, String password,
+			Handler handler, Context context) {
+		String message = createMessage(Utils.AUTHENTICATE_USER, new String[] {username, password});
+		try {
+			server.connect();
+			server.send(message);
+			
+			String response = server.recv();
+			String[] respContent = response.split(Utils.DATAGRAM_SEPARATOR);
+			
+			int action = analizeResponseHeader(respContent[0]);
+			if (action == Utils.USER_ACCESS_GRANTED) {
+				sendResult(Utils.USER_ACCESS_GRANTED, handler, context);
+				server.send("EXIT");
+				server.close();
+				return true;
+				
+			} else {
+				sendResult(action, handler, context);
+				server.send("EXIT");
+				server.close();
+				return false;
+			}
+			
+		} catch (IOException e) {
+			Log.e(CLASSTAG, "IOException connecting to server - " + e.getMessage());
+			sendResult(Utils.SERVER_ERROR, handler, context);
+			return false;
+		}
+	}
+	
+	public static int analizeResponseHeader(String header) {
+		String[] headerFields = header.split(Utils.HEADER_SEPARATOR);
+		
+		if ( headerFields.length!=4 ) return -1;
+		
+		return Integer.parseInt(headerFields[3]);
+	}
+	
+	public static int getPayloadLength(String header) {
+		String[] headerFields = header.split(Utils.HEADER_SEPARATOR);
+		return Integer.parseInt(headerFields[2]);
+	}
+	
+	public static int getOptions(String header) {
+		String[] headerFields = header.split(Utils.HEADER_SEPARATOR);
+		
+		if ( headerFields.length!=4 ) return -1;
+		
+		return Integer.parseInt(headerFields[1]);
+	}
+
+	public static boolean getEventsFromServer(int eventType, Handler handler, Context context) {
+		String message = createMessage(Utils.GET_EVENTS, new String[] {String.valueOf(eventType)});
+		try {
+			server.connect();
+			server.send(message);
+			
+			String response = server.recv();
+			String parts[] = response.split("#");
+			if (Integer.parseInt(parts[0]) == Utils.EVENT_INFORMATION_RECEIVED) {
+				sendJSONData(parts[2], handler, context);
+				server.send("EXIT");
+				server.close();
+				return true;
+				
+			} else {
+				sendJSONData(null, handler, context);
+				server.send("EXIT");
+				server.close();
+				return false;
+			}
+			
+		} catch (IOException e) {
+			Log.e(CLASSTAG, "IOException connecting to server - " + e.getMessage());
+			sendJSONData(null, handler, context);
+			return false;
+		}
+	}
+	
+	public static String getIncidentsForLine(int lineId, String username, double latitude, 
+			double longitude, Handler handler, Context context) {
+		String message;
+		if ((latitude != .0) && (longitude != .0)) {
+			message = createMessage(Utils.GET_INCIDENTS_FOR_LINE, 
+					new String[] {String.valueOf(lineId), username, String.valueOf(latitude), String.valueOf(longitude)});		}
+		
+		else {
+			message = createMessage(Utils.GET_INCIDENTS_FOR_LINE, 
+					new String[] {String.valueOf(lineId), username});		}
+		
+		try {
+			server.connect();
+			server.send(message);
+			
+			String response = server.recv();
+			String[] respContents = response.split(Utils.DATAGRAM_SEPARATOR);
+			
+			int respCode = analizeResponseHeader(respContents[0]);
+			if (respCode == Utils.LINE_INCIDENTS_INFO_RCVD) {
+				server.send("EXIT");
+				server.close();
+				return respContents[1];
+				
+			} else {
+				server.send("EXIT");
+				server.close();
+				return null;
+			}
+			
+		} catch (IOException e) {
+			Log.e(CLASSTAG, "IOException connecting to server - " + e.getMessage());
+			return null;
+		}
+	}
+	
+	public static String getGeneralIncidentsList(String username, double latitude, 
+			double longitude) {
+		String message;
+		if ((latitude != .0) && (longitude != .0)) {
+			message = createMessage(Utils.GET_GENERAL_INCIDENTS, 
+					new String[] {username, String.valueOf(latitude), String.valueOf(longitude)});		}
+		
+		else {
+			message = createMessage(Utils.GET_GENERAL_INCIDENTS, 
+					new String[] {username});		}
+		
+		try {
+			server.connect();
+			server.send(message);
+			
+			String response = server.recv();
+			String[] respContents = response.split(Utils.DATAGRAM_SEPARATOR);
+			
+			int respCode = analizeResponseHeader(respContents[0]);
+			if (respCode == Utils.GENERAL_INC_INFO_RCVD) {
+				server.send("EXIT");
+				server.close();
+				return respContents[1];
+				
+			} else {
+				server.send("EXIT");
+				server.close();
+				return null;
+			}
+			
+		} catch (IOException e) {
+			Log.e(CLASSTAG, "IOException connecting to server - " + e.getMessage());
+			return null;
+		}
+	}
+	
+	public static String getCommentsForIncident(int incidentId) {
+		String message = createMessage(Utils.GET_COMMENTS_FOR_INCIDENT, 
+				new String[] {String.valueOf(incidentId)});
+		try {
+			server.connect();
+			server.send(message);
+			
+			String response = server.recv();
+			String[] respContents = response.split(Utils.DATAGRAM_SEPARATOR);
+			
+			int respCode = analizeResponseHeader(respContents[0]);
+			if (respCode == Utils.COMMENTS_FOR_INCIDENT_RCVD) {
+				server.send("EXIT");
+				server.close();
+				return respContents[1];
+				
+			} else {
+				server.send("EXIT");
+				server.close();
+				return null;
+			}
+			
+		} catch (IOException e) {
+			Log.e(CLASSTAG, "IOException connecting to server - " + e.getMessage());
+			return null;
+		}
+	}
+	
+	public static String getGeneralIncComments(int incidentId) {
+		String message = createMessage(Utils.GET_COMMENTS_FOR_INCIDENT, Utils.DATAGRAM_GN_TYPE, 
+				new String[] {String.valueOf(incidentId)});
+		try {
+			server.connect();
+			server.send(message);
+			
+			String response = server.recv();
+			String[] respContents = response.split(Utils.DATAGRAM_SEPARATOR);
+			
+			int respCode = analizeResponseHeader(respContents[0]);
+			if (respCode == Utils.COMMENTS_FOR_INCIDENT_RCVD) {
+				server.send("EXIT");
+				server.close();
+				return respContents[1];
+				
+			} else {
+				server.send("EXIT");
+				server.close();
+				return null;
+			}
+			
+		} catch (Exception e) {
+			Log.e(CLASSTAG, "IOException connecting to server - " + e.getMessage());
+			return null;
+		}
+	}
+	
+	public static String getSingleIncident(int incidentId, int dgType) {
+		String message;
+		if ( dgType==Utils.GENERAL_INCIDENTS ) {
+			message = createMessage(Utils.GET_SINGLE_INCIDENT, Utils.DATAGRAM_GN_TYPE, 
+					new String[] {String.valueOf(incidentId)});
+		} else {
+			message = createMessage(Utils.GET_SINGLE_INCIDENT, 
+					new String[] {String.valueOf(incidentId)});
+		}
+		
+		try {
+			server.connect();
+			server.send(message);
+			
+			String response = server.recv();
+			String[] respContents = response.split(Utils.DATAGRAM_SEPARATOR);
+			
+			int respCode = analizeResponseHeader(respContents[0]);
+			if (respCode == Utils.SINGLE_INCIDENT_RCVD) {
+				server.send("EXIT");
+				server.close();
+				return respContents[1];
+				
+			} else {
+				server.send("EXIT");
+				server.close();
+				return null;
+			}
+			
+		} catch (IOException e) {
+			Log.e(CLASSTAG, "IOException connecting to server - " + e.getMessage());
+			return null;
+		}
+		
+	}
+	
+	public static String getAvailableT11(String username, double latitude, double longitude) {
+		String message;
+		if ((latitude != .0) && (longitude != .0)) {
+			message = createMessage(Utils.T11_GET, 
+					new String[] {username, String.valueOf(latitude), String.valueOf(longitude)});		}
+		
+		else {
+			message = createMessage(Utils.T11_GET, new String[] {username});		}
+		
+		try {
+			server.connect();
+			server.send(message);
+			
+			String response = server.recv();
+			String[] respContents = response.split(Utils.DATAGRAM_SEPARATOR);
+			
+			int respCode = analizeResponseHeader(respContents[0]);
+			if (respCode == Utils.T11_GET_DONE) {
+				server.send("EXIT");
+				server.close();
+				return respContents[1];
+				
+			} else {
+				server.send("EXIT");
+				server.close();
+				return null;
+			}
+			
+		} catch (IOException e) {
+			Log.e(CLASSTAG, "IOException connecting to server - " + e.getMessage());
+			return null;
+		}
+	}
+	
+	public static String getRSSFeeds(int lineId, String username, double latitude, 
+			double longitude, Handler handler, Context context) {
+		return "";
+	}
+
+	private static void sendResult(final int result, Handler handler, final Context context) {
+		if ((handler == null) || (context == null)) {
+			return;
+		}
+		
+		handler.post(new Runnable() {
+			
+			@Override
+			public void run() {
+				((LoginActivity) context).onAuthenticationResult(result);
+			}
+		});
+	}
+	
+	private static void sendJSONData(final String json, Handler handler, final Context context) {
+		if ((handler == null) || (context == null)) {
+			return;
+		}
+		
+		handler.post(new Runnable() {
+			
+			@Override
+			public void run() {
+				if (context instanceof MainActivity) {
+					((MainActivity) context).onJSONDataReceived(json);				}
+			}
+		});
+	}
+
+	private static Thread performOnBackgroundThread(final Runnable runnable) {
+		Thread t = new Thread() {
+			@Override
+			public void run() {
+				try {
+					runnable.run();
+				} finally {
+					
+				}
+			}
+		};
+		t.start();
+		return t;
+	}	
+	
+	public static void sendConfirmationToServer(int incidentId, String comment, String username, 
+			Context context) {
+		String message;
+		
+		if (!comment.equalsIgnoreCase("")) {
+			message = createMessage(Utils.INCIDENT_CONFIRMATION, 
+						new String[] {String.valueOf(incidentId), comment, username, String.valueOf(System.currentTimeMillis())});
+		} else {
+			message = createMessage(Utils.INCIDENT_CONFIRMATION, 
+					new String[] {String.valueOf(incidentId), username, String.valueOf(System.currentTimeMillis())});
+		}
+		new SendDataToServer(context).execute(message);
+	}
+	
+	public static void sendGeneralConfToServer(int incidentId, String comment, String username, 
+			Context context) {
+		String message;
+		
+		if (!comment.equalsIgnoreCase("")) {
+			message = createMessage(Utils.INCIDENT_CONFIRMATION, Utils.DATAGRAM_GN_TYPE, 
+						new String[] {String.valueOf(incidentId), comment, username, String.valueOf(System.currentTimeMillis())});
+		} else {
+			message = createMessage(Utils.INCIDENT_CONFIRMATION, Utils.DATAGRAM_GN_TYPE, 
+					new String[] {String.valueOf(incidentId), username, String.valueOf(System.currentTimeMillis())});
+		}
+		new SendDataToServer(context).execute(message);
+	}
+	
+	public static void sendT11HasBeenPickedUp(int t11Id, String username, double latitude, 
+			double longitude, Context context) {
+		String message;
+		
+		/** MISSATGE 1; 2; 5; 64 ## T11_ID # USERNAME # LATITUDE # LONGITUDE # CURRENT_TIME */
+		message = createMessage(Utils.T11_PICK_UP, Utils.DATAGRAM_GN_TYPE, 
+				new String[] {String.valueOf(t11Id), 
+							  username, 
+							  String.valueOf(latitude),
+							  String.valueOf(longitude),
+							  String.valueOf(System.currentTimeMillis())
+							 });
+		
+		new SendDataToServer(context).execute(message);
+	}
+	
+	public static boolean recordRoute(int routeId, String username, String beginStation, String endStation, 
+			int service, long startTime)
+	{
+		String message;
+		
+		/** MISSATGE <VERSIO>; 2; 6; 70 ## ROUTE_ID # USERNAME # BEGIN_STATION # END_STATION # SERVICE # START_TIME */
+		message = createMessage(Utils.ROUTE_NOTIFICATION, Utils.DATAGRAM_GN_TYPE, 
+				new String[] {String.valueOf(routeId),
+							  username,
+							  Utils.md5(beginStation),
+							  Utils.md5(endStation),
+							  String.valueOf(service),
+							  String.valueOf(startTime)
+							 });
+		
+		try {
+			server.connect();
+			server.send(message);
+			
+			server.close();
+			return true;
+			
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	public static String endOfRoute(int routeId, String username, long stopTime) {
+		
+		String message;
+		
+		/** MISSATGE <VERSIO>; 2; 3; 71 ## ROUTE_ID # USERNAME # STOP_TIME */
+		message = createMessage(Utils.END_OF_ROUTE_NOTIFICATION, Utils.DATAGRAM_GN_TYPE, 
+				new String[] {String.valueOf(routeId),
+							  username,
+							  String.valueOf(stopTime)});
+		
+		try {
+			server.connect();
+			server.send(message);
+			
+			String response = server.recv();
+			String[] responseContents = response.split(Utils.DATAGRAM_SEPARATOR);
+			
+			int respCode = analizeResponseHeader(responseContents[0]);
+			if ( respCode == Utils.END_OF_ROUTE_RESPONSE ) {
+				server.send("EXIT");
+				server.close();
+				return responseContents[1];
+			}
+			else {
+				server.send("EXIT");
+				server.close();
+				return null;
+			}
+			
+		} catch (Exception e) {
+			Log.e(CLASSTAG, "IOException connecting to server - " + e.getMessage());
+			return null;
+		}
+		
+	}
+	
+	public static int updateUserAccount(String userId, String emailAddress, String passwd) {
+		String message = createMessage(Utils.UPDATE_USER_ACCOUNT, 
+				new String[] {userId, emailAddress, passwd});
+		try {
+			server.connect();
+			server.send(message);
+			
+			String response = server.recv();
+			String[] respContents = response.split(Utils.DATAGRAM_SEPARATOR);
+			
+			int respCode = analizeResponseHeader(respContents[0]);
+			if (respCode == Utils.ACCOUNT_CORECTLY_UPDATED) {
+				server.send("EXIT");
+				server.close();
+				return respCode;
+				
+			} else {
+				server.send("EXIT");
+				server.close();
+				return -1;
+			}
+			
+		} catch (IOException e) {
+			Log.e(CLASSTAG, "IOException connecting to server - " + e.getMessage());
+			return -1;
+		}
+	}
+	
+	public static String getLatLng(String name) {
+		String message = createMessage(Utils.GET_LAT_LNG, new String[] {name});
+		try {
+			server.connect();
+			server.send(message);
+			
+			String response = server.recv();
+			String[] parts = response.split("#");
+			if (Integer.parseInt(parts[0]) == Utils.LATLNG_INFORMATION_RECEIVED) {
+				server.send("EXIT");
+				server.close();
+				return parts[2];
+				
+			} else {
+				server.send("EXIT");
+				server.close();
+				return null;
+			}
+			
+		} catch (IOException e) {
+			Log.e(CLASSTAG, "IOException connecting to server - " + e.getMessage());
+			return null;
+		}
+	}
+	
+	public static boolean isServerOnline() {
+		try {
+			server.connect();
+			boolean res = server.isConnected();
+			server.close();
+			return res;
+			
+		} catch (IOException e) {
+			return false;
+		}
+	}
+	
+	public static String createMessage(int identifier, String[] attr) {
+		int BODY_LENGTH;
+		if (attr != null) {
+			BODY_LENGTH = attr.length;		}
+		
+		else {
+			BODY_LENGTH = 0;		}
+		
+		StringBuilder header = new StringBuilder();
+		header.append(Utils.DATAGRAM_VERSION).append(Utils.HEADER_SEPARATOR)
+			  .append(Utils.DATAGRAM_PT_TYPE).append(Utils.HEADER_SEPARATOR)
+			  .append(BODY_LENGTH).append(Utils.HEADER_SEPARATOR).append(identifier);
+		
+		StringBuilder body = new StringBuilder();
+		if (BODY_LENGTH > 0) {
+			body.append(attr[0]);
+			for (int i = 1; i < BODY_LENGTH; i++) {
+				body.append(Utils.BODY_SEPARATOR).append(attr[i]);			}
+		}
+		
+		StringBuilder datagram = new StringBuilder();
+		datagram.append(header).append(Utils.DATAGRAM_SEPARATOR).append(body).append("\n");
+		
+		return datagram.toString();
+	}
+	
+	public static String createMessage(int identifier, int datagramType, String[] attr) {
+		int BODY_LENGTH;
+		if (attr != null) {
+			BODY_LENGTH = attr.length;		}
+		
+		else {
+			BODY_LENGTH = 0;		}
+		
+		StringBuilder header = new StringBuilder();
+		header.append(Utils.DATAGRAM_VERSION).append(Utils.HEADER_SEPARATOR)
+			  .append(datagramType).append(Utils.HEADER_SEPARATOR)
+			  .append(BODY_LENGTH).append(Utils.HEADER_SEPARATOR).append(identifier);
+		
+		StringBuilder body = new StringBuilder();
+		if (BODY_LENGTH > 0) {
+			body.append(attr[0]);
+			for (int i = 1; i < BODY_LENGTH; i++) {
+				body.append(Utils.BODY_SEPARATOR).append(attr[i]);			}
+		}
+		
+		StringBuilder datagram = new StringBuilder();
+		datagram.append(header).append(Utils.DATAGRAM_SEPARATOR).append(body).append("\n");
+		
+		return datagram.toString();
+	}
+}

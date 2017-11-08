@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/layout_checkboxes"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content">
+  	<CheckBox
+		android:id="@+id/renfe_checkbox"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentLeft="true"
+		android:text="@string/renfe_label"/>
+  	<CheckBox
+  		android:id="@+id/fgc_checkbox"
+  		android:layout_width="wrap_content"
+  		android:layout_height="wrap_content"
+  		android:layout_below="@id/renfe_checkbox"
+  		android:text="@string/fgc_label"/>
+  	<CheckBox
+  		android:id="@+id/metro_checkbox"
+  		android:layout_width="wrap_content"
+  		android:layout_height="wrap_content"
+  		android:layout_below="@id/fgc_checkbox"
+  		android:text="@string/metro_label"/>
+</RelativeLayout>

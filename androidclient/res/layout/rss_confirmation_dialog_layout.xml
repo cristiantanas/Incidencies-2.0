@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content">
+	
+	<RelativeLayout
+	  
+	  android:layout_width="fill_parent"
+	  android:layout_height="fill_parent"
+	  android:orientation="horizontal"
+	  android:padding="6dip">
+	  
+	  <TextView
+	  	android:id="@+id/rss_confirm_station"
+	  	android:layout_width="fill_parent"
+	  	android:layout_height="wrap_content"
+	  	android:text="@string/rss_confirm_station_label" />
+	  <Spinner
+	  	android:id="@+id/rss_confirm_station_spinner"
+	  	android:layout_width="fill_parent"
+	  	android:layout_height="wrap_content"
+	  	android:layout_below="@id/rss_confirm_station"
+	  	android:prompt="@string/rss_confirm_station_label" />
+	  	
+	  <TextView
+	  	android:id="@+id/rss_confirm_direction"
+	  	android:layout_width="fill_parent"
+	  	android:layout_height="wrap_content"
+	  	android:layout_below="@id/rss_confirm_station_spinner"
+	  	android:text="@string/direction_label" />
+	  <Spinner
+	  	android:id="@+id/rss_confirm_direction_spinner"
+	  	android:layout_width="fill_parent"
+	  	android:layout_height="wrap_content"
+	  	android:layout_below="@id/rss_confirm_direction"
+	  	android:prompt="@string/direction_label" />
+	  	
+	  <TextView
+	  	android:id="@+id/rss_confirm_cause"
+	  	android:layout_width="fill_parent"
+	  	android:layout_height="wrap_content"
+	  	android:layout_below="@id/rss_confirm_direction_spinner"
+	  	android:text="@string/report_class_label" />
+	  <Spinner
+	  	android:id="@+id/rss_confirm_cause_spinner"
+	  	android:layout_width="fill_parent"
+	  	android:layout_height="wrap_content"
+	  	android:layout_below="@id/rss_confirm_cause"
+	  	android:prompt="@string/report_class_label" />
+	  	
+	  <TextView
+	  	android:id="@+id/rss_confirm_severity"
+	  	android:layout_width="fill_parent"
+	  	android:layout_height="wrap_content"
+	  	android:layout_below="@id/rss_confirm_cause_spinner"
+	  	android:text="@string/report_severity_label" />
+	  <Spinner
+	  	android:id="@+id/rss_confirm_severity_spinner"
+	  	android:layout_width="fill_parent"
+	  	android:layout_height="wrap_content"
+	  	android:layout_below="@id/rss_confirm_severity"
+	  	android:prompt="@string/report_severity_label" />
+	  	
+	  <EditText
+	  	android:id="@+id/rss_confirm_comment"
+	  	android:layout_width="fill_parent"
+	  	android:layout_height="wrap_content"
+	  	android:layout_below="@id/rss_confirm_severity_spinner"
+	  	android:hint="@string/description_label"
+	  	android:maxLength="100" />
+	  	
+	  <Button
+		android:id="@+id/rss_confirm_submit_button"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/rss_confirm_comment"
+		android:text="@string/submit_label"/>
+	  <Button
+		android:id="@+id/rss_confirm_cancel_button"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignTop="@id/rss_confirm_submit_button"
+		android:layout_alignBottom="@id/rss_confirm_submit_button"
+		android:layout_toRightOf="@id/rss_confirm_submit_button"
+		android:text="@string/cancel_label"/>
+	  
+	</RelativeLayout>
+
+</ScrollView>

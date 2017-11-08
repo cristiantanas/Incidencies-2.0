@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent">
+  
+  <RelativeLayout
+  	android:layout_width="fill_parent"
+  	android:layout_height="?android:attr/listPreferredItemHeight"
+  	android:padding="6dip">
+  	<ImageView
+  		android:id="@+id/route_icon"
+  		android:layout_width="wrap_content"
+  		android:layout_height="fill_parent"
+  		android:adjustViewBounds="true"
+  		android:layout_marginRight="6dip"/>
+  	<TextView
+  		android:id="@+id/route_begining"
+  		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:layout_toRightOf="@id/route_icon"
+  		android:layout_marginTop="7dip"
+  		android:singleLine="true"
+  		android:ellipsize="marquee"/>
+  	<TextView
+  		android:id="@+id/route_end"
+  		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+  		android:layout_toRightOf="@id/route_icon"
+  		android:layout_below="@id/route_begining"
+  		android:layout_alignWithParentIfMissing="true"/>
+  </RelativeLayout>
+  
+  <View
+  	android:layout_width="fill_parent"
+  	android:layout_height="2dip"
+  	android:background="?android:attr/listDivider"/>
+  
+  <ListView
+  	android:id="@+id/android:list"
+  	android:layout_width="fill_parent"
+  	android:layout_height="wrap_content"
+  	android:layout_weight="1.0"/>
+  <TextView
+  	android:id="@+id/android:empty"
+  	android:layout_width="fill_parent"
+  	android:layout_height="fill_parent"
+  	android:layout_marginTop="6dip"
+  	android:text="@string/no_incidents"/>
+  	
+</LinearLayout>
