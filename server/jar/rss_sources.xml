@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sources>
+	<source>
+		<url line="0">http://www.gencat.cat/rodalies/incidencies_rodalies_rss_r1_ca_ES.xml</url>
+	</source>
+	<source>
+		<url line="1">http://www.gencat.cat/rodalies/incidencies_rodalies_rss_r2_nord_ca_ES.xml</url>
+	</source>
+	<source>
+		<url line="2">http://www.gencat.cat/rodalies/incidencies_rodalies_rss_r2_sud_ca_ES.xml</url>
+	</source>
+	<source>
+		<url line="3">http://www.gencat.cat/rodalies/incidencies_rodalies_rss_r3_ca_ES.xml</url>
+	</source>
+	<source>
+		<url line="4">http://www.gencat.cat/rodalies/incidencies_rodalies_rss_r4_ca_ES.xml</url>
+	</source>
+	<source>
+		<url line="5">http://www.gencat.cat/rodalies/incidencies_rodalies_rss_r7_ca_ES.xml</url>
+	</source>
+	<source>
+		<url line="6">http://www.gencat.cat/rodalies/incidencies_rodalies_rss_r8_ca_ES.xml</url>
+	</source>
+</sources>

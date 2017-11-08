@@ -1,0 +1,358 @@
+package org.uab.android.incidencies.validation;
+
+import static org.uab.android.incidencies.utils.Utils.createMessage;
+
+import java.io.UnsupportedEncodingException;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Vector;
+
+import org.uab.android.incidencies.database.DataBaseUtils;
+import org.uab.android.incidencies.utils.Constants;
+import org.uab.android.incidencies.utils.GeneralNotification;
+import org.uab.android.incidencies.utils.Incident;
+import org.uab.android.incidencies.utils.IncidentClassification;
+import org.uab.android.incidencies.utils.IncidentNotification;
+import org.uab.android.incidencies.utils.Utils;
+
+public class ValidationUtilities {
+	public static final double DEG_TO_RAD = Math.PI / 180;
+	public static final double EARTH_RADIUS = 6372797.560856;
+	public static final double MIN_DISTANCE = 50;
+	public static final double REPUTATION_BOUNDARY = 0.91;
+	public static final int MIN_CONFIRMATIONS = 1;
+	
+	private static HashMap<Integer, Vector<String>> waitingList = 
+				new HashMap<Integer, Vector<String>>();
+
+	public static String validate(int version, IncidentNotification notification, boolean active) 
+					throws SQLException, ClassNotFoundException, UnsupportedEncodingException {
+		
+		double reputation = getReputationForUser(notification.getUsername());
+		if ( reputation<0 ) {
+			DataBaseUtils.submitReport(version, notification, 666);		
+			return createMessage(Constants.SERVER_ERROR, null);
+		}
+		
+		if (!active) { // Validation disabled
+			DataBaseUtils.submitReport(version, notification, Constants.ACTIVE);
+			return createMessage(Utils.DATA_RECEIVED_CORECTLY, null);
+			
+		} else { // Validation enabled
+			int ex = existsReport(notification);
+			if (ex == Constants.REPORT_DO_NOT_EXISTS) { // New report
+				int id;
+				if (checkReputation(notification.getUsername())) {
+					id = DataBaseUtils.submitReport(version, notification, Constants.ACTIVE);
+					increaseReputation(notification.getUsername(), version);
+					
+				} else {
+					id = DataBaseUtils.submitReport(version, notification, Constants.QUARANTINE);
+					addToWaitingList(id, notification.getUsername());
+				}
+				
+				return createMessage(Utils.DATA_RECEIVED_CORECTLY, 
+						new String[] {String.valueOf(id)});
+				
+			} else if (ex > 0) { // Report already exists (ex = id)
+				int condition = getReportStatus(ex);
+				int userId = DataBaseUtils.getUserId(notification.getUsername(), version);
+				if (userId == -1) {
+					throw new SQLException("The user with username = " + notification.getUsername() +
+							" doesn't exists in our database!");
+				}
+				
+				if (userAlreadyConfirmed(userId, ex, 0)) {
+					return createMessage(Utils.NOTIFICATION_DUPLICATE, null);
+					
+				} else {
+					if (condition == Constants.ACTIVE) { // The existing report is active
+						DataBaseUtils.updateReportList(version, notification, ex);
+						increaseReputation(notification.getUsername(), version);
+						
+					} else if (condition == Constants.QUARANTINE) { // Decide weather the report will pass to active or not
+						
+						// If the user has enough reputation we validate the report
+						if (checkReputation(notification.getUsername())) {
+							DataBaseUtils.updateReportStatus(ex, Constants.ACTIVE);
+							DataBaseUtils.updateReportList(version, notification, ex);
+							increaseReputation(notification.getUsername(), version);
+							validateWaitingList(ex, version);
+							
+						} else {
+							int confirmation = DataBaseUtils.getParentElements(ex) + 1;
+							if (confirmation > MIN_CONFIRMATIONS) {
+								DataBaseUtils.updateReportStatus(ex, Constants.ACTIVE);
+								DataBaseUtils.updateReportList(version, notification, ex);
+								increaseReputation(notification.getUsername(), version);
+								validateWaitingList(ex, version);
+								
+							} else {
+								DataBaseUtils.updateReportList(version, notification, ex);
+								addToWaitingList(ex, notification.getUsername());
+							}
+						}
+					}
+					recalculateTTL(notification.getSeverity(), System.currentTimeMillis(), ex);
+					
+					return createMessage(Utils.DATA_RECEIVED_CORECTLY, 
+							new String[] {String.valueOf(ex)});
+					
+				}
+			}
+			
+			return createMessage(Utils.DATA_RECEIVED_CORECTLY, null);
+		}
+		
+	}
+	
+	public static String validate(int version, GeneralNotification notification, boolean active) 
+							throws SQLException, ClassNotFoundException {
+		
+		double reputation = getReputationForUser(notification.getUsername());
+		if ( reputation<0 ) {
+			DataBaseUtils.submitReport(version, notification, 666);
+			return createMessage(Constants.SERVER_ERROR, null);
+		}
+		
+		int id;
+		if (checkReputation(notification.getUsername())) {
+			id = DataBaseUtils.submitReport(version, notification, Constants.ACTIVE);
+			increaseReputation(notification.getUsername(), version);
+			
+		} else {
+			id = DataBaseUtils.submitReport(version, notification, Constants.QUARANTINE);
+			addToWaitingList(id, notification.getUsername());
+		}
+		return createMessage(Utils.DATA_RECEIVED_CORECTLY, new String[] {String.valueOf(id)});
+	}
+	
+	public static String processConfirmation(int incidentId, String comment, String username,
+			int version, long time) 
+						throws SQLException, ClassNotFoundException {
+		int userId = DataBaseUtils.getUserId(username, version);
+		
+		Incident incident = DataBaseUtils.getReport(incidentId);
+		incident.setLastUpdateTime(time);
+		
+		if (userAlreadyConfirmed(userId, incidentId, 0)) {
+			if (comment.equalsIgnoreCase("")) {
+				return createMessage(Utils.NOTIFICATION_DUPLICATE, null);		}
+			
+			else {
+				DataBaseUtils.addConfirmation(incident, userId, comment);
+				recalculateTTL(incident.getSeverity(), incident.getLastUpdateTime(), incidentId);
+				return createMessage(Utils.DATA_RECEIVED_CORECTLY, null);
+			}
+			
+		} else {
+			if (incident.getStatus() == Constants.QUARANTINE) {		
+				DataBaseUtils.addConfirmation(incident, userId, comment);
+				if (DataBaseUtils.getParentElements(incidentId) > MIN_CONFIRMATIONS) {
+					DataBaseUtils.updateReportStatus(incidentId, Constants.ACTIVE);
+					increaseReputation(username, version);
+					validateWaitingList(incidentId, version);
+				}
+				recalculateTTL(incident.getSeverity(), incident.getLastUpdateTime(), incidentId);
+				
+			} else if (incident.getStatus() == Constants.ACTIVE) {
+				DataBaseUtils.addConfirmation(incident, userId, comment);
+				recalculateTTL(incident.getSeverity(), incident.getLastUpdateTime(), incidentId);
+			}
+			
+			return createMessage(Utils.DATA_RECEIVED_CORECTLY, null);
+		} 
+	}
+	
+	public static String processGeneralIncConfirmation(int incidentId, String comment, 
+			String username, int version, long time)
+							throws SQLException, ClassNotFoundException {
+		int userId = DataBaseUtils.getUserId(username, version);
+		
+		GeneralNotification incident = DataBaseUtils.getGeneralNotification(incidentId);
+		incident.setLastUpdateTime(time);
+		
+		if ( userAlreadyConfirmed(userId, incidentId, Utils.GENERAL_INCIDENTS) ) {
+			if ( comment.equalsIgnoreCase("") ) {
+				return createMessage(Utils.NOTIFICATION_DUPLICATE, null);			}
+			
+			else {
+				DataBaseUtils.addConfirmation(incident, userId, comment);
+				recalculateGenIncTTL(incident.getSeverity(), incident.getLastUpdateTime(), incidentId);
+				return createMessage(Utils.DATA_RECEIVED_CORECTLY, null);
+			}
+			
+		} else {
+			if (incident.getStatus() == Constants.QUARANTINE) {		
+				DataBaseUtils.addConfirmation(incident, userId, comment);
+				if (DataBaseUtils.getGenNotConfirmations(incidentId) > MIN_CONFIRMATIONS) {
+					DataBaseUtils.updateGenIncStatus(incidentId, Constants.ACTIVE);
+					increaseReputation(username, version);
+					validateWaitingList(incidentId, version);
+				}
+				recalculateGenIncTTL(incident.getSeverity(), incident.getLastUpdateTime(), incidentId);
+				
+			} else if (incident.getStatus() == Constants.ACTIVE) {
+				DataBaseUtils.addConfirmation(incident, userId, comment);
+				recalculateGenIncTTL(incident.getSeverity(), incident.getLastUpdateTime(), incidentId);
+			}
+			
+			return createMessage(Utils.DATA_RECEIVED_CORECTLY, null);
+		}
+	}
+	
+	public static String processT11PickUpNotification(int t11Id, String username, int version,
+			double latitude, double longitude, long currentTime) 
+							throws SQLException, ClassNotFoundException {
+		
+		// Invalidar el registre a la taula de T11's actives
+		DataBaseUtils.t11HasBeenPickedUp(t11Id, currentTime);
+		
+		// Registrar quan s'ha agafat la T11 i qui l'ha agafat
+		DataBaseUtils.t11PickUpRegister(t11Id, username, version, currentTime);
+		
+		return createMessage(Constants.T11_CORRECTLY_UPDATED, null);
+	}
+
+	
+	private static boolean userAlreadyConfirmed(int userId, int eventId, int incType)
+							throws SQLException, ClassNotFoundException {
+		Vector<Integer> userList;
+		if ( incType==Utils.GENERAL_INCIDENTS ) {
+			userList = DataBaseUtils.getGeneralConfirmationList(eventId);
+			
+		} else {
+			userList = DataBaseUtils.getUserConfirmationList(eventId);
+		}
+		
+		return userList.contains(userId);
+	}
+	
+	private static int existsReport(IncidentNotification notification) 
+						throws SQLException, ClassNotFoundException, UnsupportedEncodingException {
+		List<IncidentClassification> databaseReports = DataBaseUtils.getReports();
+		
+		if (databaseReports.isEmpty()) { return Constants.REPORT_DO_NOT_EXISTS; }
+				
+		for (IncidentClassification item : databaseReports) {
+			if (sameReport(notification, item)) {
+				return item.getIncidentId();
+			}
+		}
+		
+		return Constants.REPORT_DO_NOT_EXISTS;
+	}
+	
+	private static boolean sameReport(IncidentNotification not, IncidentClassification dbReg) {
+		if ( (not.getTransportService() == dbReg.getTransportService()) && 
+			 (not.getCause() == dbReg.getCause()) &&
+			 (not.getUniqueLineId() == dbReg.getUniqueLineId()) &&
+			 (not.getStationHashValue().equalsIgnoreCase(dbReg.getStationName())) ) {
+			
+			return true;
+			
+		} 
+		
+		return false;
+	}
+	
+	public static double haversineDist(double initialLat, double initialLon, 
+			double finalLat, double finalLon) {
+		double dlat = (finalLat - initialLat) * DEG_TO_RAD;
+		double dlon = (finalLon - initialLon) * DEG_TO_RAD;
+		
+		double latitudeH = Math.sin(dlat * 0.5) * Math.sin(dlat * 0.5);
+		double longitudeH = Math.sin(dlon * 0.5) * Math.sin(dlon * 0.5);
+		double tmp = Math.cos(initialLat * DEG_TO_RAD) * Math.cos(finalLat * DEG_TO_RAD);
+		
+		double a = latitudeH + tmp * longitudeH;
+		
+		return 2 * EARTH_RADIUS * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	}
+	
+	private static int getReportStatus(int reportId) 
+						throws SQLException, ClassNotFoundException {
+		Incident incident = DataBaseUtils.getReport(reportId);
+		return incident.getStatus();
+	}
+	
+	private static boolean checkReputation(String username) 
+							throws SQLException, ClassNotFoundException {
+		double reputation = DataBaseUtils.getUserReputation(username);
+		return (reputation > REPUTATION_BOUNDARY);
+	}
+	
+	private static double getReputationForUser(String username)
+							throws SQLException, ClassNotFoundException {
+		
+		return DataBaseUtils.getUserReputation(username);
+	}
+	
+	private static void increaseReputation(String username, int version) 
+							throws SQLException, ClassNotFoundException {
+		int[] transactions = DataBaseUtils.getTransactionCount(username);
+		transactions[0] += 1;
+		double rating = computeRating(transactions[0], transactions[1]);
+		
+		DataBaseUtils.updateUserReputation(version, username, rating, transactions);
+	}
+	
+	private static double computeRating(int positive, int negative) {
+		double alfa = positive + 1;
+		double beta = negative + 1;
+		
+		return (alfa / (alfa + beta));
+	}
+	
+	private static void addToWaitingList(int report, String username) {
+		if (waitingList.containsKey(report)) {
+			waitingList.get(report).add(username);
+			
+		} else {
+			Vector<String> v = new Vector<String>();
+			v.add(username);
+			waitingList.put(report, v);
+			
+		}
+	}
+	
+	private static void validateWaitingList(int report, int version) 
+							throws SQLException, ClassNotFoundException {
+		if (waitingList.containsKey(report)) {
+			Vector<String> vec = waitingList.get(report);
+			
+			for (String username : vec) {
+				increaseReputation(username, version);
+			}
+			
+			waitingList.remove(report);
+		}
+	}
+	
+	private static void recalculateTTL(int severity, long currentTime, int ex) 
+						throws SQLException, ClassNotFoundException {
+		int actualTTL = 10 + (severity * 20);
+		int oldTTL = DataBaseUtils.getTTL(ex);
+		long lastModified = DataBaseUtils.getLastModified(ex);
+		long elapsedTime = (currentTime - lastModified) / Utils.MIN_TO_MILIS;
+		
+		int incr = (actualTTL - (int)(oldTTL - elapsedTime));
+		
+		int newTTL = incr > 0 ? oldTTL + incr:oldTTL;
+		DataBaseUtils.updateReportTTL(ex, newTTL, currentTime);
+	}
+	
+	private static void recalculateGenIncTTL(int severity, long currentTime, int ex) 
+						throws SQLException, ClassNotFoundException {
+		int actualTTL = 10 + (severity * 20);
+		int oldTTL = DataBaseUtils.getGenIncTTL(ex);
+		long lastModified = DataBaseUtils.getGenIncLastModified(ex);
+		long elapsedTime = (currentTime - lastModified) / Utils.MIN_TO_MILIS;
+		
+		int incr = (actualTTL - (int)(oldTTL - elapsedTime));
+		
+		int newTTL = incr > 0 ? oldTTL + incr:oldTTL;
+		DataBaseUtils.updateGenIncTTL(ex, newTTL, currentTime);
+	}
+}
